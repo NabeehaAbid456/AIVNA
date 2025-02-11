@@ -1,0 +1,37 @@
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, Conv1D, GlobalMaxPooling1D, Dense
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Define the 1D CNN model with explicit input shape
+cnn_model = Sequential()
+cnn_model.add(Embedding(input_dim=len(chars), output_dim=50, input_length=seq_length))
+cnn_model.add(Conv1D(filters=128, kernel_size=3, activation='relu', input_shape=(seq_length, 50)))  # Specify input_shape
+cnn_model.add(GlobalMaxPooling1D())  # Reduces the dimension of the feature map
+cnn_model.add(Dense(128, activation='relu'))  # Fully connected layer
+cnn_model.add(Dense(len(chars), activation='softmax'))  # Output layer
+
+# Compile the model
+cnn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Build the model explicitly with the input shape
+cnn_model.build(input_shape=(None, seq_length))  # Batch size can be None
+cnn_model.summary()
+
+# Train the CNN model
+cnn_history = cnn_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+
+# Predict on training data for comparison
+cnn_y_pred = cnn_model.predict(X)
+cnn_y_pred_classes = np.argmax(cnn_y_pred, axis=1)
+y_true_classes = np.argmax(y, axis=1)
+
+# Calculate training accuracy for the CNN model
+cnn_accuracy = accuracy_score(y_true_classes, cnn_y_pred_classes) * 100
+print(f"1D CNN Training Accuracy: {cnn_accuracy:.2f}%")
+
+# Extract validation accuracy for CNN
+cnn_val_accuracy = cnn_history.history['val_accuracy'][-1] * 100
+print(f"1D CNN Validation Accuracy: {cnn_val_accuracy:.2f}%")
+
+print(f"Model Accuracy on Test Set: {accuracy:.2f}%")
