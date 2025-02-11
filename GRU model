@@ -1,0 +1,33 @@
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, GRU, Dense
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Define the GRU model
+gru_model = Sequential()
+gru_model.add(Embedding(input_dim=len(chars), output_dim=50, input_length=seq_length))  # Embedding layer
+gru_model.add(GRU(128, return_sequences=False))  # GRU layer
+gru_model.add(Dense(len(chars), activation='softmax'))  # Output layer
+
+# Compile the model
+gru_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Build the model explicitly
+gru_model.build(input_shape=(None, seq_length))
+gru_model.summary()
+
+# Train the GRU model
+gru_history = gru_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+
+# Predict on training data for comparison
+gru_y_pred = gru_model.predict(X)
+gru_y_pred_classes = np.argmax(gru_y_pred, axis=1)
+y_true_classes = np.argmax(y, axis=1)
+
+# Calculate training accuracy for the GRU model
+gru_accuracy = accuracy_score(y_true_classes, gru_y_pred_classes) * 100
+print(f"GRU Training Accuracy: {gru_accuracy:.2f}%")
+
+# Extract validation accuracy for GRU
+gru_val_accuracy = gru_history.history['val_accuracy'][-1] * 100
+print(f"GRU Validation Accuracy: {gru_val_accuracy:.2f}%")
