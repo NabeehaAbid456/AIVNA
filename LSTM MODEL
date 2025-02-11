@@ -1,0 +1,101 @@
+STEP 1
+# Load your data from the text file
+with open('File path') as file:
+    sequences = file.readlines()
+
+# Clean and preprocess sequences
+sequences = [seq.strip().upper() for seq in sequences if len(seq.strip()) > 0]
+
+# Create a character set and mapping
+chars = sorted(list(set(''.join(sequences))))
+char_to_index = {char: i for i, char in enumerate(chars)}
+index_to_char = {i: char for i, char in enumerate(chars)}
+
+# Convert sequences to numerical format
+encoded_sequences = [[char_to_index[char] for char in seq] for seq in sequences]
+
+STEP 2
+# Set sequence length
+seq_length = 100  # Adjust based on your data
+
+X = []
+y = []
+
+for sequence in encoded_sequences:
+    for i in range(0, len(sequence) - seq_length):
+        input_seq = sequence[i:i + seq_length]
+        output_char = sequence[i + seq_length]
+        X.append(input_seq)
+        y.append(output_char)
+
+# Convert X and y to numpy arrays
+X = np.array(X)
+y = np.array(y)
+
+# One-hot encode y
+y = to_categorical(y, num_classes=len(chars))
+
+STEP 3
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, LSTM, Dense
+
+# Updated model
+model = Sequential()
+model.add(Embedding(input_dim=len(chars), output_dim=50))  # Removed `input_length`
+model.add(LSTM(128, input_shape=(None, len(chars)), return_sequences=False))
+model.add(Dense(len(chars), activation='softmax'))
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.build(input_shape=(None, seq_length))  # Specify the input shape explicitly
+model.summary()
+STEP 4
+# Train the model
+history = model.fit(X, y, epochs=10, batch_size=32, validation_split=0.2)
+STEP 5
+def generate_sequence(model, seed_text, num_chars):
+    for _ in range(num_chars):
+        input_seq = [char_to_index[char] for char in seed_text[-seq_length:]]
+        input_seq = np.array(input_seq).reshape(1, -1)
+        
+        predicted_probs = model.predict(input_seq, verbose=0)[0]
+        next_index = np.argmax(predicted_probs)
+        next_char = index_to_char[next_index]
+        
+        seed_text += next_char
+    return seed_text
+
+# Provide a seed sequence
+seed = sequences[0][:seq_length]  # Start with a real sequence
+generated_sequence = generate_sequence(model, seed, 500)
+print("Generated Sequence:")
+print(generated_sequence)
+
+For accuracy
+# Extract validation accuracy
+val_accuracy = history.history['val_accuracy'][-1]  # Accuracy from the last epoch
+print(f"Validation Accuracy: {val_accuracy * 100:.2f}%")
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the model on the training set
+history = model.fit(X_train, y_train, epochs=10, batch_size=16, validation_split=0.2)
+
+# Evaluate the model on the test set
+y_pred = model.predict(X_test)
+
+# Convert one-hot encoded predictions and true labels to class indices
+y_pred_classes = np.argmax(y_pred, axis=1)
+y_true_classes = np.argmax(y_test, axis=1)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_true_classes, y_pred_classes) * 100
+
+
+
+
+
