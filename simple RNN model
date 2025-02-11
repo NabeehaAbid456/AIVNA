@@ -1,0 +1,33 @@
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Embedding, SimpleRNN, Dense
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Define the Simple RNN model
+rnn_model = Sequential()
+rnn_model.add(Embedding(input_dim=len(chars), output_dim=50, input_length=seq_length))  # Embedding layer
+rnn_model.add(SimpleRNN(128, return_sequences=False))  # Simple RNN layer
+rnn_model.add(Dense(len(chars), activation='softmax'))  # Output layer
+
+# Compile the model
+rnn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Build the model explicitly
+rnn_model.build(input_shape=(None, seq_length))
+rnn_model.summary()
+
+# Train the Simple RNN model
+rnn_history = rnn_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+
+# Predict on training data for comparison
+rnn_y_pred = rnn_model.predict(X)
+rnn_y_pred_classes = np.argmax(rnn_y_pred, axis=1)
+y_true_classes = np.argmax(y, axis=1)
+
+# Calculate training accuracy for the Simple RNN model
+rnn_accuracy = accuracy_score(y_true_classes, rnn_y_pred_classes) * 100
+print(f"Simple RNN Training Accuracy: {rnn_accuracy:.2f}%")
+
+# Extract validation accuracy for Simple RNN
+rnn_val_accuracy = rnn_history.history['val_accuracy'][-1] * 100
+print(f"Simple RNN Validation Accuracy: {rnn_val_accuracy:.2f}%")
