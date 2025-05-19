@@ -17,7 +17,7 @@ rnn_model.build(input_shape=(None, seq_length))
 rnn_model.summary()
 
 # Train the Simple RNN model
-rnn_history = rnn_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+rnn_history = rnn_model.fit(X, y, epochs=10, batch_size=32, validation_split=0.2)
 
 # Predict on training data for comparison
 rnn_y_pred = rnn_model.predict(X)
