@@ -17,7 +17,7 @@ gru_model.build(input_shape=(None, seq_length))
 gru_model.summary()
 
 # Train the GRU model
-gru_history = gru_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+gru_history = gru_model.fit(X, y, epochs=10, batch_size=32, validation_split=0.2)
 
 # Predict on training data for comparison
 gru_y_pred = gru_model.predict(X)
