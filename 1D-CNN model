@@ -19,7 +19,7 @@ cnn_model.build(input_shape=(None, seq_length))  # Batch size can be None
 cnn_model.summary()
 
 # Train the CNN model
-cnn_history = cnn_model.fit(X, y, epochs=10, batch_size=16, validation_split=0.2)
+cnn_history = cnn_model.fit(X, y, epochs=10, batch_size=32, validation_split=0.2)
 
 # Predict on training data for comparison
 cnn_y_pred = cnn_model.predict(X)
